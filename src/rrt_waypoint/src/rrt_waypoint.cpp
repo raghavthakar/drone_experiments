@@ -118,6 +118,14 @@ bool offboard_control_ned(mavsdk::Offboard& offboard)
     offboard.set_velocity_ned(turn_north);
     sleep_for(seconds(10)); // Allowing the yaw to settle
 
+    // Co-ordinates are relative to start frame
+    offboard_log(offb_mode, "Going to position 5, 5");
+    Offboard::PositionNedYaw goto_5_5{};
+    goto_5_5.north_m = 5.0f;
+    goto_5_5.east_m = 5.0f;
+    offboard.set_position_ned(goto_5_5);
+    sleep_for(seconds(10));
+
     // Now, stop offboard mode.
     offboard_result = offboard.stop();
     offboard_error_exit(offboard_result, "Offboard stop failed: ");

@@ -19,6 +19,10 @@ add_executable(rrt_waypoint
     # ... any other source files
 )
 
+add_executable(rrt
+	rrt.cpp
+)
+
 # Specify your app's executable name and a list of linked libraries
 target_link_libraries(rrt_waypoint
     MAVSDK::mavsdk             #All apps link against mavsdk library
