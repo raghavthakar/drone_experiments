@@ -445,13 +445,9 @@ public:
     //declare iterator over the Node list that contains all odes
     for(list<Node>::iterator i = --path.end(); i!=path.begin(); i--)
     {
-      csv_file<<i->getCol()<<","<<i->getRow()
-        <<","<<i->parent->getCol()<<","
-        <<i->parent->getRow()<<endl;
+      csv_file<<i->getCol()<<","<<i->getRow()<<endl;
     }
-    csv_file<<path.begin()->getCol()<<","<<path.begin()->getRow()
-      <<","<<path.begin()->parent->getCol()<<","
-      <<path.begin()->parent->getRow()<<endl;
+    csv_file<<path.begin()->getCol()<<","<<path.begin()->getRow()<<endl;
     csv_file.close();
   }
 };
@@ -598,6 +594,17 @@ int main()
   // main_tree.showAllNodes();
 
   rrt_map.displayWaypoints();
+
+  //Read the waypoints from csv file
+  std::ifstream csv_file;
+  csv_file.open("path.csv");
+  std::string line;
+
+  while(!csv_file.eof())
+  {
+      csv_file>>line;
+      std::cout<<line<<" ";
+  }
 
   return(0);
 }
