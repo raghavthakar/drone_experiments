@@ -103,7 +103,15 @@ inline void offboard_log(const std::string& offb_mode, const std::string msg)
  */
 bool offboard_control_ned(mavsdk::Offboard& offboard, std::vector<float> coords)
 {
-    std::cout <<coords[0]<< '\n';
+    //east
+    coords[0]/=50;
+    coords[0]-=11;
+
+    //north
+    coords[1]=1000-coords[1];
+    coords[1]/=50;
+    coords[1]-=11;
+    std::cout <<coords[1]<< ", "<<coords[0]<<'\n';
     const std::string offb_mode = "NED";
     // Send it once before starting offboard, otherwise it will be rejected.
     const Offboard::VelocityNedYaw stay{};
@@ -114,59 +122,14 @@ bool offboard_control_ned(mavsdk::Offboard& offboard, std::vector<float> coords)
     offboard_error_exit(offboard_result, "Offboard start failed");
     offboard_log(offb_mode, "Offboard started");
 
-    offboard_log(offb_mode, "Turn to face North");
-    Offboard::VelocityNedYaw turn_north{};
-    turn_north.yaw_deg = 0.0f;
-    offboard.set_velocity_ned(turn_north);
-    sleep_for(seconds(10)); // Allowing the yaw to settle
-
     // Co-ordinates are relative to start frame
-    offboard_log(offb_mode, "Going to position 5, 5");
-    Offboard::PositionNedYaw goto_5_5{};
-    goto_5_5.north_m = 5.0f;
-    goto_5_5.east_m = 5.0f;
-    offboard.set_position_ned(goto_5_5);
-    sleep_for(seconds(10));
-
-    // Now, stop offboard mode.
-    offboard_result = offboard.stop();
-    offboard_error_exit(offboard_result, "Offboard stop failed: ");
-    offboard_log(offb_mode, "Offboard stopped");
-
-    return true;
-}
-
-/**
- * Does Offboard control using NED co-ordinates.
- *
- * returns true if everything went well in Offboard control, exits with a log
- * otherwise.
- */
-bool offboard_control_ned(mavsdk::Offboard& offboard)
-{
-    const std::string offb_mode = "NED";
-    // Send it once before starting offboard, otherwise it will be rejected.
-    const Offboard::VelocityNedYaw stay{};
-    offboard.set_velocity_ned(stay);
-
-    //Attempt to start offboard mode, handle errors.
-    Offboard::Result offboard_result = offboard.start();
-    offboard_error_exit(offboard_result, "Offboard start failed");
-    offboard_log(offb_mode, "Offboard started");
-
-    offboard_log(offb_mode, "Turn to face North");
-    Offboard::VelocityNedYaw turn_north{};
-    turn_north.yaw_deg = 0.0f;
-    offboard.set_velocity_ned(turn_north);
-    sleep_for(seconds(10)); // Allowing the yaw to settle
-
-    // Co-ordinates are relative to start frame
-    offboard_log(offb_mode, "Going to position 5, 5");
-    Offboard::PositionNedYaw goto_5_5{};
-    goto_5_5.north_m = 5.0f;
-    goto_5_5.east_m = 5.0f;
-    offboard.set_position_ned(goto_5_5);
-    sleep_for(seconds(10));
+    offboard_log(offb_mode, "Going to netx waypoint");
+    Offboard::PositionNedYaw next_waypoint{};
+    next_waypoint.north_m=coords[1];
+    next_waypoint.east_m=coords[0];
+    next_waypoint.down_m=-3;
+    offboard.set_position_ned(next_waypoint);
+    sleep_for(seconds(5));
 
     // Now, stop offboard mode.
     offboard_result = offboard.stop();
@@ -220,11 +183,6 @@ int main(int argc, char** argv)
     std::promise<void> in_air_promise;
     auto in_air_future = in_air_promise.get_future();
 
-    //Read the waypoints from csv file
-    std::ifstream path_file;
-    path_file.open("path.csv");
-    std::string line, word;
-
     // Attempt to arm the drone. Handle the action error.
     Action::Result arm_result = action.arm();
     action_error_exit(arm_result, "Arming failed");
@@ -237,8 +195,12 @@ int main(int argc, char** argv)
     telemetry.subscribe_landed_state(landed_state_callback(telemetry, in_air_promise));
     in_air_future.wait();
 
-    //store the next waypoint coordinates {colnum, rownum}
+    // //store the next waypoint coordinates {colnum, rownum}
     std::vector<float> coords;
+    //Read the waypoints from csv file
+    std::ifstream path_file;
+    path_file.open("path.csv");
+    std::string line, word;
 
     //read the cooridnates from the csv file
     while(!path_file.eof())
@@ -249,7 +211,7 @@ int main(int argc, char** argv)
         while(getline(s, word, ','))
         {
             //push the coordinate into the coordinates vector
-            coords.push_back((float)(std::stoi(word)/10));
+            coords.push_back(std::stoi(word));
         }
         //  using local NED co-ordinates for offboard control
         bool ret = offboard_control_ned(offboard, coords);
@@ -259,10 +221,28 @@ int main(int argc, char** argv)
     }
 
     //  using local NED co-ordinates for offboard control
-    bool ret = offboard_control_ned(offboard);
-    if (ret == false) {
-        return EXIT_FAILURE;
-    }
+    // bool ret = offboard_control_ned(offboard);
+    // if (ret == false) {
+    //     return EXIT_FAILURE;
+    // }
+
+    // while(true)
+    // {
+    //     coords.clear();
+    //     float north, east;
+    //     std::cout << "Enter north: ";
+    //     std::cin >> north;
+    //     std::cout << "Enter east: ";
+    //     std::cin >> east;
+    //     coords.push_back(north);
+    //     coords.push_back(east);
+    //
+    //     //  using local NED co-ordinates
+    //     bool ret = offboard_control_ned(offboard, coords);
+    //     if (ret == false) {
+    //         return EXIT_FAILURE;
+    //     }
+    // }
 
     const Action::Result land_result = action.land();
     action_error_exit(land_result, "Landing failed");
