@@ -1,5 +1,4 @@
 # Waypoint Navigation for Drones Using RRT
-## rrt visualiser photo, empty aepl world, drone in world, qgc, qgc settings
 This repository allows a drone to navigate across a room with obstacles, while making sure to pass through the provided waypoints in the correct order. **MAVSDK** API
 was utilised along with **PX4-SITL** to control the drone and track its behaviour.
 
@@ -80,7 +79,7 @@ It should show you the generated tree, something like this:
 ### Observe the Path on a Drone
 The `rrt` executable generates a CSV file called `path.csv` that stores the path for the drone to follow. You can observe this path actually being followed by a drone by running, in the `rrt_waypoint/src` directory:
 ```
-build/rrt_waypoint
+build/rrt_waypoint udp://:14540
 ```
 This should run the `rrt_waypoint` application, and make your drone follow the set path, avoiding any obstacles on its path. This is achieved using the offboard control mode offered by **MAVSDK**.
 
