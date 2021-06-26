@@ -15,6 +15,8 @@ using std::this_thread::sleep_for;
 #define TELEMETRY_CONSOLE_TEXT "\033[34m" // Turn text on console blue
 #define NORMAL_CONSOLE_TEXT "\033[0m" // Restore normal console colour
 
+#define CRUISE_ALT -2.5 //cruising altitude
+
 // Handles Action's result
 // it is inline as it is so small and commonly called.
 inline void action_error_exit(Action::Result result, const std::string& message)
@@ -103,11 +105,14 @@ inline void offboard_log(const std::string& offb_mode, const std::string msg)
  */
 bool offboard_control_ned(mavsdk::Offboard& offboard, std::vector<float> coords)
 {
-    //east
+    //CONVERT O-1000 COORDINATES TO -11-+9 (TO ACCOUNT FOR DRONE STARTING AT (1, 1))
+    // COLUMN NUMBER INCREASES LEFT TO RIGHT, SAME AS EARLIER, BUT ROW NUMBER MUST
+    //MAP TO NORTH DISTANCE, WHICH INCREASES TOP TO BOTTOM.
+    //east/column number
     coords[0]/=50;
     coords[0]-=11;
 
-    //north
+    //north/ row number
     coords[1]=1000-coords[1];
     coords[1]/=50;
     coords[1]-=11;
@@ -123,11 +128,11 @@ bool offboard_control_ned(mavsdk::Offboard& offboard, std::vector<float> coords)
     offboard_log(offb_mode, "Offboard started");
 
     // Co-ordinates are relative to start frame
-    offboard_log(offb_mode, "Going to netx waypoint");
+    offboard_log(offb_mode, "Going to next waypoint");
     Offboard::PositionNedYaw next_waypoint{};
     next_waypoint.north_m=coords[1];
     next_waypoint.east_m=coords[0];
-    next_waypoint.down_m=-2.5;
+    next_waypoint.down_m=CRUISE_ALT;
     offboard.set_position_ned(next_waypoint);
     sleep_for(seconds(2));
 
