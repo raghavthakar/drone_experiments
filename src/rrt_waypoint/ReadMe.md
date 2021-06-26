@@ -10,7 +10,7 @@ was utilised along with **PX4-SITL** to control the drone and track its behaviou
 This implementation takes in co-ordinates for the `start` and `target` points, along with several waypoints in a local frame. The RRT algorithm is
 then employed to plot a path from `start` to `waypoint#1`, `waypoint#1` to `waypoint#2` and so on until `target` is reached.
 
-Obstacles can be configured as per requirements by uncommenting the relevant code in the `map` class. Right, they have been assumed to represent the
+Obstacles can be configured as per requirements by uncommenting the relevant code in the `map` class. Right now, they have been assumed to represent the
 following configuration:
 
 ![visualiser](https://github.com/raghavthakar/drone_nav/blob/main/src/rrt_waypoint/ReadMe_assets/visualiser.png)
