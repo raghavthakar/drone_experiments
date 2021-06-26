@@ -1,5 +1,7 @@
 # Waypoint Navigation for Drones Using RRT
-See the drone in action: https://youtu.be/ASD3BhYQ9qo
+### See the drone in action: https://youtu.be/VgvTWIBN-yA.
+
+Alternatively, view the entire process video [here](https://youtu.be/ASD3BhYQ9qo).
 
 This repository allows a drone to navigate across a room with obstacles, while making sure to pass through the provided waypoints in the correct order. **MAVSDK** API
 was utilised along with **PX4-SITL** to control the drone and track its behaviour.
