@@ -68,3 +68,22 @@ build/rrt
 ```
 The code should run, and should ask you information about where the starting point is, where target is, and where the waypoints are. Inputs between 0-1000
 as row/column number are valid.
+
+### Visualise
+Once the path avoiding the obstacles has been plotted, you can visualise the tree by navigating to the `scripts` directory and running the `visualiser.py` file using:
+```
+./visualiser.py
+```
+It should show you the generated tree, something like this:
+![visualiser](https://github.com/raghavthakar/drone_nav/blob/main/src/rrt_waypoint/ReadMe_assets/visualiser.png)
+
+### Observe the Path on a Drone
+The `rrt` executable generates a CSV file called `path.csv` that stores the path for the drone to follow. You can observe this path actually being followed by a drone by running, in the `rrt_waypoint/src` directory:
+```
+build/rrt_waypoint
+```
+This should run the `rrt_waypoint` application, and make your drone follow the set path, avoiding any obstacles on its path. This is achieved using the offboard control mode offered by **MAVSDK**.
+
+The co-ordinates system is changed to a local NED system, which also accounts for the starting (1, 1) position of the drone.
+
+While the drone executes the movement along the path, you may view the video feed as well as track the movement of the drone on ***QGroundControl***.
