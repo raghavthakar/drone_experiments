@@ -61,7 +61,7 @@ This drone has an in-built video streaming plugin, which can be toggled with a g
 Open **QGroundControl** to connect with your drone.
 ![](https://github.com/raghavthakar/drone_nav/blob/main/src/rrt_waypoint/ReadMe_assets/qgc_home.png)
    
-If you cannot see a video stream from your drone, go to `Application Settings`->`General`->`Video` and amke sure it looks like this:
+If you cannot see a video stream from your drone, go to `Application Settings`->`General`->`Video` and make sure it looks like this:
 ![](https://github.com/raghavthakar/drone_nav/blob/main/src/rrt_waypoint/ReadMe_assets/qgc_settings.png)
 
 ### Run the Navigation Code
