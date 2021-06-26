@@ -127,9 +127,9 @@ bool offboard_control_ned(mavsdk::Offboard& offboard, std::vector<float> coords)
     Offboard::PositionNedYaw next_waypoint{};
     next_waypoint.north_m=coords[1];
     next_waypoint.east_m=coords[0];
-    next_waypoint.down_m=-3;
+    next_waypoint.down_m=-2.5;
     offboard.set_position_ned(next_waypoint);
-    sleep_for(seconds(5));
+    sleep_for(seconds(2));
 
     // Now, stop offboard mode.
     offboard_result = offboard.stop();
@@ -219,30 +219,6 @@ int main(int argc, char** argv)
             return EXIT_FAILURE;
         }
     }
-
-    //  using local NED co-ordinates for offboard control
-    // bool ret = offboard_control_ned(offboard);
-    // if (ret == false) {
-    //     return EXIT_FAILURE;
-    // }
-
-    // while(true)
-    // {
-    //     coords.clear();
-    //     float north, east;
-    //     std::cout << "Enter north: ";
-    //     std::cin >> north;
-    //     std::cout << "Enter east: ";
-    //     std::cin >> east;
-    //     coords.push_back(north);
-    //     coords.push_back(east);
-    //
-    //     //  using local NED co-ordinates
-    //     bool ret = offboard_control_ned(offboard, coords);
-    //     if (ret == false) {
-    //         return EXIT_FAILURE;
-    //     }
-    // }
 
     const Action::Result land_result = action.land();
     action_error_exit(land_result, "Landing failed");

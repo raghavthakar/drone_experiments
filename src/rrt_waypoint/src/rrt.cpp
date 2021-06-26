@@ -16,7 +16,6 @@
 #define SLEEP_TIME 1000
 #define MAP_LENGTH 1000
 
-// Because I am a terrrible person
 using namespace std;
 
 //when the closest Node to the sampled point is determined,
@@ -161,18 +160,18 @@ public:
 
   Map()
   {
-    int num_obstacles, num_waypoints;
+    int num_waypoints;
     int wc, wr;
-    int tlc, tlr, brc, brr;
+    // int tlc, tlr, brc, brr;
 
-    cout<<"Enter starting column number: ";
+    cout<<"Enter starting column number (0-1000, increasing rightwards): ";
     cin>>this->starting_column;
-    cout<<"Enter starting row number: ";
+    cout<<"Enter starting row number (0-1000, increasing downwards): ";
     cin>>this->starting_row;
 
-    cout<<"Enter target column number: ";
+    cout<<"Enter target column number (0-1000, increasing rightwards): ";
     cin>>this->target_column;
-    cout<<"Enter target row number: ";
+    cout<<"Enter target row number (0-1000, increasing downwards): ";
     cin>>this->target_row;
 
     //Write obstacle data to csv file
@@ -208,25 +207,37 @@ public:
     //Target radius write to csv
     csv_file<<radius<<endl;
 
-    cout<<"Enter number of obstacles: ";
-    cin>>num_obstacles;
+    // cout<<"Enter number of obstacles: ";
+    // cin>>num_obstacles;
 
-    for(int i=0; i<num_obstacles; i++)
-    {
-      cout<<"Enter obstacle top left column number: ";
-      cin>>tlc;
-      cout<<"Enter obstacle top left row number: ";
-      cin>>tlr;
-      cout<<"Enter obstacle bottom right column number: ";
-      cin>>brc;
-      cout<<"Enter obstacle bottom right row number: ";
-      cin>>brr;
+    // for(int i=0; i<num_obstacles; i++)
+    // {
+    //   cout<<"Enter obstacle top left column number: ";
+    //   cin>>tlc;
+    //   cout<<"Enter obstacle top left row number: ";
+    //   cin>>tlr;
+    //   cout<<"Enter obstacle bottom right column number: ";
+    //   cin>>brc;
+    //   cout<<"Enter obstacle bottom right row number: ";
+    //   cin>>brr;
+    //
+    //   csv_file<<tlc<<","<<tlr<<","<<brc<<","<<brr<<endl;
+    //
+    //   //push a test Obstacle
+    //   all_obstacles.push_back(*(new Obstacle(tlc, tlr, brc, brr)));
+    // }
 
-      csv_file<<tlc<<","<<tlr<<","<<brc<<","<<brr<<endl;
+    csv_file<<100<<","<<650<<","<<300<<","<<700<<endl;
+    all_obstacles.push_back(*(new Obstacle(100, 650, 300, 700)));
 
-      //push a test Obstacle
-      all_obstacles.push_back(*(new Obstacle(tlc, tlr, brc, brr)));
-    }
+    csv_file<<300<<","<<700<<","<<350<<","<<900<<endl;
+    all_obstacles.push_back(*(new Obstacle(300, 700, 350, 900)));
+
+    csv_file<<650<<","<<100<<","<<700<<","<<300<<endl;
+    all_obstacles.push_back(*(new Obstacle(650, 100, 700, 300)));
+
+    csv_file<<700<<","<<300<<","<<900<<","<<350<<endl;
+    all_obstacles.push_back(*(new Obstacle(700, 300, 900, 350)));
 
     csv_file.close();
 
