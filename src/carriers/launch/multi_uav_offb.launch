@@ -1,0 +1,37 @@
+<launch>
+    <group ns="uav0">
+        <arg name="fcu_url" default="udp://:14540@127.0.0.1:14550"/>
+        <arg name="gcs_url" default="" />
+        <arg name="tgt_system" default="1" />
+        <arg name="tgt_component" default="1" />
+        <arg name="log_output" default="screen" />
+        <arg name="fcu_protocol" default="v2.0" />
+        <arg name="respawn_mavros" default="false" />
+
+        <node pkg="carriers" type="offb_node" name="offb_node"/>
+    </group>
+
+    <group ns="uav1">
+        <arg name="fcu_url" default="udp://:14541@127.0.0.1:14551"/>
+        <arg name="gcs_url" default="" />
+        <arg name="tgt_system" default="1" />
+        <arg name="tgt_component" default="1" />
+        <arg name="log_output" default="screen" />
+        <arg name="fcu_protocol" default="v2.0" />
+        <arg name="respawn_mavros" default="false" />
+
+        <node pkg="carriers" type="offb_node" name="offb_node"/>
+    </group>
+
+    <group ns="uav2">
+        <arg name="fcu_url" default="udp://:14542@127.0.0.1:14552"/>
+        <arg name="gcs_url" default="" />
+        <arg name="tgt_system" default="1" />
+        <arg name="tgt_component" default="1" />
+        <arg name="log_output" default="screen" />
+        <arg name="fcu_protocol" default="v2.0" />
+        <arg name="respawn_mavros" default="false" />
+
+        <node pkg="carriers" type="offb_node" name="offb_node"/>
+    </group>
+</launch>
