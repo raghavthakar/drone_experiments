@@ -1,2 +1,2 @@
-# drone_nav
-Implement various path finding and navigation algorithms on drones.
+# drone_experiments
+Implement and experiment with various algorithms and techniques on drones.
