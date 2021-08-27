@@ -10,6 +10,7 @@ project(carriers)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   mavros_msgs
+  std_msgs
   roscpp
 )
 
@@ -135,6 +136,8 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(offb_node src/offb_node.cpp)
 
+add_executable(swarm_member src/swarm_member.cpp)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -147,6 +150,10 @@ add_executable(offb_node src/offb_node.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(offb_node
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(swarm_member
   ${catkin_LIBRARIES}
 )
 

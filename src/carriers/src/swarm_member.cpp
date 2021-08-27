@@ -1,8 +1,5 @@
-/**
- * @file offb_node.cpp
- * @brief Offboard control example node, written with MAVROS version 0.19.x, PX4 Pro Flight
- * Stack and tested in Gazebo SITL
- */
+// Launches a drone as a part of a swarm, and tries to maintain a formation.
+// Follows a path as part of a swarm
 
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -18,7 +15,7 @@ void state_cb(const mavros_msgs::State::ConstPtr& msg){
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "offb_node");
+    ros::init(argc, argv, "swarm_member");
     ros::NodeHandle nh;
 
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
