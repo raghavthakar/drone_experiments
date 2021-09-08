@@ -8,6 +8,7 @@ project(carriers)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  message_generation
   geometry_msgs
   mavros_msgs
   std_msgs
@@ -55,11 +56,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  CentreOfMass.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -69,10 +69,12 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   mavros_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  geometry_msgs
+  mavros_msgs
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -138,6 +140,9 @@ add_executable(offb_node src/offb_node.cpp)
 
 add_executable(swarm_member src/swarm_member.cpp)
 
+add_executable(centre_of_mass_server src/centre_of_mass_server.cpp)
+# add_dependencies(centre_of_mass_server carriers_gencpp)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -155,6 +160,10 @@ target_link_libraries(offb_node
 
 target_link_libraries(swarm_member
   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(centre_of_mass_server
+    ${catkin_LIBRARIES}
 )
 
 #############

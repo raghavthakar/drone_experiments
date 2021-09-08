@@ -34,7 +34,8 @@ int main(int argc, char **argv)
     ros::Rate rate(20.0);
 
     // wait for FCU connection
-    while(ros::ok() && !current_state.connected){
+    while(ros::ok() && !current_state.connected)
+    {
         ros::spinOnce();
         rate.sleep();
     }
@@ -45,7 +46,8 @@ int main(int argc, char **argv)
     pose.pose.position.z = 2;
 
     //send a few setpoints before starting
-    for(int i = 100; ros::ok() && i > 0; --i){
+    for(int i = 100; ros::ok() && i > 0; --i)
+    {
         local_pos_pub.publish(pose);
         ros::spinOnce();
         rate.sleep();
@@ -57,29 +59,34 @@ int main(int argc, char **argv)
     mavros_msgs::CommandBool arm_cmd;
     arm_cmd.request.value = true;
 
+    ros::param::get("/drone_count", drone_count);
+    // If drone_count is less than 1+drone_number, update it to drone_number
+    if(drone_count<(int)(1+*argv[1])-48)
+        ros::param::set("/drone_count", (int)(1+*argv[1])-48);
+
     ros::Time last_request = ros::Time::now();
 
     while(ros::ok())
     {
-        ros::param::get("/drone_count", drone_count);
-        // If drone_count is less than drone_number, update it to drone_number
-        if(drone_count<(int)(*argv[1])-48)
-            ros::param::set("/drone_count", (int)(*argv[1])-48);
-
         if( current_state.mode != "OFFBOARD" &&
-            (ros::Time::now() - last_request > ros::Duration(5.0))){
+            (ros::Time::now() - last_request > ros::Duration(5.0)))
+        {
             if( set_mode_client.call(offb_set_mode) &&
-                offb_set_mode.response.mode_sent){
+                offb_set_mode.response.mode_sent)
+            {
                 ROS_INFO("Offboard enabled");
             }
             last_request = ros::Time::now();
-        } else {
+        }
+        else
+        {
             if( !current_state.armed &&
-                (ros::Time::now() - last_request > ros::Duration(5.0))){
-                if( arming_client.call(arm_cmd) &&
-                    arm_cmd.response.success){
-                    ROS_INFO("Vehicle armed");
-                }
+                (ros::Time::now() - last_request > ros::Duration(5.0)))
+                {
+                    if( arming_client.call(arm_cmd) && arm_cmd.response.success)
+                    {
+                        ROS_INFO("Vehicle armed");
+                    }
                 last_request = ros::Time::now();
             }
         }
