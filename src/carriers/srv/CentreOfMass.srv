@@ -1,2 +1,2 @@
 ---
-geometry_msgs/Point COM
+sensor_msgs/NavSatFix COM

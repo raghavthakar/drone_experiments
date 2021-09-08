@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   geometry_msgs
   mavros_msgs
+  sensor_msgs
   std_msgs
   roscpp
 )
@@ -74,6 +75,7 @@ generate_messages(
   geometry_msgs
   mavros_msgs
   std_msgs
+  sensor_msgs
 )
 
 ################################################
