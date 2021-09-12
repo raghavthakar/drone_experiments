@@ -37,3 +37,14 @@ Launch the test takeoff nodes for each drone by launching:
 `roslaunch carriers multi_uav_offb.launch`
 
 This launch file launches a node for each drone. Make sure that the namespaces are consistent with `multi_uav_mavros_sitl.launch`. This launch file ___does not___ launch the mavros node. That is again taken care of by `multi_uav_mavros_sitl.launch`.
+
+### Modification to the px4 launch file
+To add a little more functionality, modify the file `single_vehicle_spawn.launch` in the autopilot firmware by adding the following lines:
+
+    <!-- Push the starting position to the parameter server -->
+    <param name="initial_position/x" value="$(arg x)"/>
+    <param name="initial_position/y" value="$(arg y)"/>
+    <param name="initial_position/z" value="$(arg z)"/>
+
+This allows the system to know the starting postion of each drone, which can be used in addtiton to the odometry data to accurately identify the
+position of each drone in the global frame.

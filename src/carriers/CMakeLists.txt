@@ -142,6 +142,8 @@ add_executable(offb_node src/offb_node.cpp)
 
 add_executable(swarm_member src/swarm_member.cpp)
 
+add_executable(pose_transformer src/pose_transformer.cpp)
+
 add_executable(centre_of_mass_server src/centre_of_mass_server.cpp)
 # add_dependencies(centre_of_mass_server carriers_gencpp)
 
@@ -162,6 +164,10 @@ target_link_libraries(offb_node
 
 target_link_libraries(swarm_member
   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(pose_transformer
+    ${catkin_LIBRARIES}
 )
 
 target_link_libraries(centre_of_mass_server

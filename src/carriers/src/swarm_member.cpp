@@ -66,6 +66,8 @@ int main(int argc, char **argv)
 
     ros::Time last_request = ros::Time::now();
 
+    ROS_INFO("Before while!");
+
     while(ros::ok())
     {
         if( current_state.mode != "OFFBOARD" &&

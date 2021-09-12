@@ -3,5 +3,6 @@
     <!-- The uav1 or uav2 etc namespace must match the namespace in multi_uav_mavros_sitl.launch -->
     <group ns="uav$(arg drone_number)">
         <node pkg="carriers" type="swarm_member" name="swarm_member" args="$(arg drone_number)" output="screen"/>
+        <node pkg="carriers" type="pose_transformer" name="pose_transformer" args="$(arg drone_number)" output="screen"/>
     </group>
 </launch>
