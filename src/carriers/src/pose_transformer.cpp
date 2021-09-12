@@ -69,7 +69,7 @@ public:
     //callback when local position is received, Should publish transformed position
     void transformPose(const geometry_msgs::PoseStamped& local_position)
     {
-        ROS_INFO("In the callback!Drone id: %c, inital position x:%f y:%f", drone_id, initial_position.x, initial_position.y);
+        // ROS_INFO("In the callback!Drone id: %c, inital position x:%f y:%f", drone_id, initial_position.x, initial_position.y);
 
         //Make same as local position
         geometry_msgs::Pose transformed_pose=local_position.pose;
