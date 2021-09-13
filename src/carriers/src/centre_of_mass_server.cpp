@@ -12,8 +12,6 @@ bool get_centre_of_mass(carriers::CentreOfMass::Request &request,
     int drone_count;
     ros::param::get("/drone_count", drone_count);
 
-    ROS_INFO("NO of drones: %d", drone_count);
-
     std::string uav_globalposition_topic;
     geometry_msgs::PoseConstPtr uav_globalposition;
     for(int i=0; i<drone_count; i++)
@@ -23,8 +21,8 @@ bool get_centre_of_mass(carriers::CentreOfMass::Request &request,
         uav_globalposition=ros::topic::waitForMessage<geometry_msgs::Pose>
                                                         (uav_globalposition_topic);
 
-        ROS_INFO("Drone %d x %f and y %f", drone_count,
-                uav_globalposition->position.x,uav_globalposition->position.y);
+        // ROS_INFO("Drone %d x %f and y %f", drone_count,
+        //         uav_globalposition->position.x,uav_globalposition->position.y);
 
         response.COM.position.x+=uav_globalposition->position.x;
         response.COM.position.y+=uav_globalposition->position.y;

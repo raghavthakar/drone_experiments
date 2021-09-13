@@ -4,20 +4,51 @@
 // - Then follow waypoint navigation in the formation
 
 #include <ros/ros.h>
+#include <cmath>
 #include "carriers/CentreOfMass.h"
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
-void horizontalFormation()
+#define PI 3.14159265359
+
+// Get the COM of the drones, then position drone based on drone_id and no. of drones and formation radius
+void horizontalFormation(ros::ServiceClient COM_client, int drone_id,
+        int drone_count, ros::Publisher local_pos_pub)
 {
+    int formation_radius;
+
+    carriers::CentreOfMass COM;
+    // Get the centrw of mass of th system
+    ROS_INFO("HORIZONTAL_FORMATION");
+    if (COM_client.call(COM))
+    {
+      ROS_INFO("Got COM successfully");
+    }
+    else
+    {
+      ROS_ERROR("Failed to call service centre_of_mass_server");
+      return;
+    }
+
+    // Get the radius of formation
+    ros::param::get("/formation_radius", formation_radius);
+
+    // decide the position angle in the formation for the drone
+    double formation_position_angle=drone_id*2*PI/drone_count;
+
+    // print the formation position angle
+    ROS_INFO("Drone count: %d Drone: %d Formation position angle: %f",
+            drone_count, drone_id, formation_position_angle);
 
 }
 
-void verticalFormation()
+void verticalFormation(ros::ServiceClient COM_client, int drone_id,
+        int drone_count, ros::Publisher local_pos_pub)
 {
-    
+    ROS_INFO("VERTICAL_FORMATION");
 }
 
 //Store the current state in a global varibale through callback
@@ -31,11 +62,14 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "swarm_member");
     ros::NodeHandle nh;
 
+    // Get the id of the drone by converting from char
+    int drone_id=(int)(*argv[1])-48;
+
     int drone_count;
     ros::param::get("/drone_count", drone_count);
-    // If drone_count is less than 1+drone_number, update it to drone_number
-    if(drone_count<(int)(1+*argv[1])-48)
-        ros::param::set("/drone_count", (int)(1+*argv[1])-48);
+    // If drone_count is less than 1+drone_id, update it to drone_id
+    if(drone_count<1+drone_id)
+        ros::param::set("/drone_count", 1+drone_id);
 
     // Mechnaism to handle the current state if the drone
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
@@ -52,6 +86,10 @@ int main(int argc, char** argv)
     // Will let us set the drone to offboard mode
     ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
             ("mavros/set_mode");
+
+    // Client for getting the COM
+    ros::ServiceClient COM_client = nh.serviceClient<carriers::CentreOfMass>
+            ("/centre_of_mass");
 
     // Striing to store the current swarm state
     std::string swarm_state;
@@ -125,18 +163,18 @@ int main(int argc, char** argv)
     // State machine
     while(swarm_state!="DISABLED")
     {
+        // To keep the drone count updated
+        ros::param::get("/drone_count", drone_count);
         ros::param::get("/swarm_state", swarm_state);
 
         if(swarm_state=="HORIZONTAL_FORMATION")
         {
-            horizontalFormation();
+            horizontalFormation(COM_client, drone_id, drone_count, local_pos_pub);
         }
-
         else if(swarm_state=="VERTICAL_FORMATION")
         {
-            verticalFormation();
+            verticalFormation(COM_client, drone_id, drone_count, local_pos_pub);
         }
-
         else
         {
             break;
