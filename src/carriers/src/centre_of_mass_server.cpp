@@ -49,5 +49,5 @@ int main(int argc, char** argv)
     ROS_INFO("Determining centre of mass");
     ros::spin();
 
-    return 0;
+    return 1;
 }

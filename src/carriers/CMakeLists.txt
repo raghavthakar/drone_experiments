@@ -52,8 +52,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   Message1.msg
-#   Message2.msg
+#   SwarmState.msg
 # )
 
 ## Generate services in the 'srv' folder
@@ -110,7 +109,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES carriers
-#  CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp
+ CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp message_runtime
 #  DEPENDS system_lib
 )
 
@@ -147,6 +146,8 @@ add_executable(pose_transformer src/pose_transformer.cpp)
 add_executable(centre_of_mass_server src/centre_of_mass_server.cpp)
 # add_dependencies(centre_of_mass_server carriers_gencpp)
 
+add_executable(main src/main.cpp)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -174,7 +175,11 @@ target_link_libraries(centre_of_mass_server
     ${catkin_LIBRARIES}
 )
 
-#############
+target_link_libraries(main
+    ${catkin_LIBRARIES}
+)
+
+#############uint8
 ## Install ##
 #############
 

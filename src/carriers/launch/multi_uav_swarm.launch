@@ -17,5 +17,7 @@
         <arg name="drone_number" value="2"/>
     </include>
     <!-- This node finds the centre of mass of all the drones in the swarm -->
-    <node pkg="carriers" type="centre_of_mass_server" name="centre_of_mass_server" args="$(arg drone_number)" output="screen"/>
+    <node pkg="carriers" type="centre_of_mass_server" name="centre_of_mass_server" output="screen"/>
+
+    <node pkg="carriers" type="main" name="main" output="screen"/>
 </launch>
