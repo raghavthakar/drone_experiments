@@ -14,15 +14,16 @@
 
 // Store the centroid in a global variable
 geometry_msgs::Pose centroid;
-void centroid_cb(const geometry_msgs::Pose::ConstPtr& msg){
+void centroid_cb(const geometry_msgs::PoseConstPtr& msg){
     centroid = *msg;
+    ROS_INFO("centroid z: %f", centroid.position.z);
 }
 
 #define PI 3.14159265359
 
 // Get the COM of the drones, then position drone based on drone_id and no. of drones and formation radius
 void horizontalFormation(ros::ServiceClient COM_client, int drone_id,
-        int drone_count, ros::Publisher local_pos_pub)
+        int drone_count, ros::Publisher local_pos_pub, ros::Subscriber centroid_sub)
 {
     int formation_radius;
 
@@ -42,6 +43,9 @@ void horizontalFormation(ros::ServiceClient COM_client, int drone_id,
     //   return;
     // }
 
+    ros::Duration some_time(0.01);
+    centroid=*ros::topic::waitForMessage<geometry_msgs::Pose>("/centroid");
+
     // Get the radius of formation
     ros::param::get("/formation_radius", formation_radius);
 
@@ -49,22 +53,28 @@ void horizontalFormation(ros::ServiceClient COM_client, int drone_id,
     double formation_position_angle=drone_id*2*PI/drone_count;
 
     // print the formation position angle
-    ROS_INFO("Drone count: %d Drone: %d Formation position angle: %f",
-            drone_count, drone_id, formation_position_angle);
+    // ROS_INFO("Drone count: %d Drone: %d Formation position angle: %f",
+    //         drone_count, drone_id, formation_position_angle);
 
     // Assign the position
     target_pose.pose.position.x=centroid.position.x+formation_radius*std::cos(formation_position_angle);
     target_pose.pose.position.y=centroid.position.y+formation_radius*std::sin(formation_position_angle);
     target_pose.pose.position.z=centroid.position.z;
-    //
+    // ROS_INFO("Centroid z: %f", centroid.position.z);
     // ROS_INFO("COM x: %f y: %f z: %f", COM.response.COM.position.x,
     //             COM.response.COM.position.y, COM.response.COM.position.z);
 
+    // ros::Rate rate(30);
+    // for(int i=0; i<10; i++)
+    // {
+    //     local_pos_pub.publish(target_pose);
+    //     rate.sleep();
+    // }
     local_pos_pub.publish(target_pose);
 }
 
 void verticalFormation(ros::ServiceClient COM_client, int drone_id,
-        int drone_count, ros::Publisher local_pos_pub)
+        int drone_count, ros::Publisher local_pos_pub, ros::Subscriber centroid_sub)
 {
     ROS_INFO("VERTICAL_FORMATION");
 }
@@ -98,8 +108,9 @@ int main(int argc, char** argv)
             ("mavros/setpoint_position/local", 10);
 
     // Used to keep track of the centroid of the swarm
-    ros::Subscriber centroid_sub = nh.subscribe<geometry_msgs::Pose>
-            ("/centroid", 10, centroid_cb);
+    ros::Subscriber centroid_sub;
+    // ros::Subscriber centroid_sub = nh.subscribe<geometry_msgs::Pose>
+    //         ("/centroid", 10, centroid_cb);
 
     // Arming client
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>
@@ -182,7 +193,7 @@ int main(int argc, char** argv)
     }
     ROS_INFO("Armed: %d", current_state.armed);
 
-    for(int i=0; i<500; i++)
+    for(int i=0; i<250; i++)
     {
         local_pos_pub.publish(pose);
         rate.sleep();
@@ -197,11 +208,11 @@ int main(int argc, char** argv)
 
         if(swarm_state=="HORIZONTAL_FORMATION")
         {
-            horizontalFormation(COM_client, drone_id, drone_count, local_pos_pub);
+            horizontalFormation(COM_client, drone_id, drone_count, local_pos_pub, centroid_sub);
         }
         else if(swarm_state=="VERTICAL_FORMATION")
         {
-            verticalFormation(COM_client, drone_id, drone_count, local_pos_pub);
+            verticalFormation(COM_client, drone_id, drone_count, local_pos_pub, centroid_sub);
         }
         else
         {

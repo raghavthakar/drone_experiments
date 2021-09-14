@@ -37,7 +37,7 @@ int main(int argc, char** argv)
         centroid.position.y/=drone_count;
         centroid.position.z/=drone_count;
 
-        ROS_INFO("centroid: %f %f %f", centroid.position.x, centroid.position.y, centroid.position.z);
+        // ROS_INFO("centroid: %f %f %f", centroid.position.x, centroid.position.y, centroid.position.z);
         centroid_publisher.publish(centroid);
     }
     ROS_INFO("ENded publishing");

@@ -11,7 +11,6 @@
 // - DISABLED
 
 // THIS FILE CONTROLS THE HIGH LEVEL BEHAVIOUR OF THE SWARM
-
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "main");
