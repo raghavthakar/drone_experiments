@@ -146,6 +146,8 @@ add_executable(pose_transformer src/pose_transformer.cpp)
 add_executable(centre_of_mass_server src/centre_of_mass_server.cpp)
 # add_dependencies(centre_of_mass_server carriers_gencpp)
 
+add_executable(centroid_publisher src/centroid_publisher.cpp)
+
 add_executable(main src/main.cpp)
 
 ## Rename C++ executable without prefix
@@ -176,6 +178,10 @@ target_link_libraries(centre_of_mass_server
 )
 
 target_link_libraries(main
+    ${catkin_LIBRARIES}
+)
+
+target_link_libraries(centroid_publisher
     ${catkin_LIBRARIES}
 )
 

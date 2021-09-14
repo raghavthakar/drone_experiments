@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 
     std::string swarm_state="HORIZONTAL_FORMATION";
     ros::param::set("/swarm_state", swarm_state);
-    sleep(15);
+    sleep(245);
 
     swarm_state="VERTICAL_FORMATION";
     ros::param::set("/swarm_state", swarm_state);

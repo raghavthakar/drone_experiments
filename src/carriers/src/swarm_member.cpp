@@ -12,6 +12,12 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
+// Store the centroid in a global variable
+geometry_msgs::Pose centroid;
+void centroid_cb(const geometry_msgs::Pose::ConstPtr& msg){
+    centroid = *msg;
+}
+
 #define PI 3.14159265359
 
 // Get the COM of the drones, then position drone based on drone_id and no. of drones and formation radius
@@ -20,18 +26,21 @@ void horizontalFormation(ros::ServiceClient COM_client, int drone_id,
 {
     int formation_radius;
 
+    // Will be used to give target position to the drone
+    geometry_msgs::PoseStamped target_pose;
+
     carriers::CentreOfMass COM;
     // Get the centrw of mass of th system
     ROS_INFO("HORIZONTAL_FORMATION");
-    if (COM_client.call(COM))
-    {
-      ROS_INFO("Got COM successfully");
-    }
-    else
-    {
-      ROS_ERROR("Failed to call service centre_of_mass_server");
-      return;
-    }
+    // if (COM_client.call(COM))
+    // {
+    //   ROS_INFO("Got COM successfully");
+    // }
+    // else
+    // {
+    //   ROS_ERROR("Failed to call service centre_of_mass_server");
+    //   return;
+    // }
 
     // Get the radius of formation
     ros::param::get("/formation_radius", formation_radius);
@@ -43,6 +52,15 @@ void horizontalFormation(ros::ServiceClient COM_client, int drone_id,
     ROS_INFO("Drone count: %d Drone: %d Formation position angle: %f",
             drone_count, drone_id, formation_position_angle);
 
+    // Assign the position
+    target_pose.pose.position.x=centroid.position.x+formation_radius*std::cos(formation_position_angle);
+    target_pose.pose.position.y=centroid.position.y+formation_radius*std::sin(formation_position_angle);
+    target_pose.pose.position.z=centroid.position.z;
+    //
+    // ROS_INFO("COM x: %f y: %f z: %f", COM.response.COM.position.x,
+    //             COM.response.COM.position.y, COM.response.COM.position.z);
+
+    local_pos_pub.publish(target_pose);
 }
 
 void verticalFormation(ros::ServiceClient COM_client, int drone_id,
@@ -79,6 +97,10 @@ int main(int argc, char** argv)
     ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>
             ("mavros/setpoint_position/local", 10);
 
+    // Used to keep track of the centroid of the swarm
+    ros::Subscriber centroid_sub = nh.subscribe<geometry_msgs::Pose>
+            ("/centroid", 10, centroid_cb);
+
     // Arming client
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>
             ("mavros/cmd/arming");
@@ -109,7 +131,7 @@ int main(int argc, char** argv)
     geometry_msgs::PoseStamped pose;
     pose.pose.position.x = 0;
     pose.pose.position.y = 0;
-    pose.pose.position.z = 2;
+    pose.pose.position.z = 12;
 
     //send a few setpoints before starting
     for(int i = 100; ros::ok() && i > 0; --i)
@@ -159,6 +181,12 @@ int main(int argc, char** argv)
         rate.sleep();
     }
     ROS_INFO("Armed: %d", current_state.armed);
+
+    for(int i=0; i<500; i++)
+    {
+        local_pos_pub.publish(pose);
+        rate.sleep();
+    }
 
     // State machine
     while(swarm_state!="DISABLED")

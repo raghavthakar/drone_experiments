@@ -17,7 +17,7 @@ bool get_centre_of_mass(carriers::CentreOfMass::Request &request,
     for(int i=0; i<drone_count; i++)
     {
         uav_globalposition_topic="/uav"+std::to_string(i)+"/global_position/cartesian";
-        ROS_INFO("%s", uav_globalposition_topic.c_str());
+        // ROS_INFO("%s", uav_globalposition_topic.c_str());
         uav_globalposition=ros::topic::waitForMessage<geometry_msgs::Pose>
                                                         (uav_globalposition_topic);
 
@@ -33,7 +33,7 @@ bool get_centre_of_mass(carriers::CentreOfMass::Request &request,
     response.COM.position.y/=drone_count;
     response.COM.position.z/=drone_count;
 
-    ROS_INFO("IN THE SERVICE");
+    // ROS_INFO("IN THE SERVICE");
     return true;
 }
 

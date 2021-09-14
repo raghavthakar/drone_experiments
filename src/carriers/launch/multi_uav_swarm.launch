@@ -19,5 +19,9 @@
     <!-- This node finds the centre of mass of all the drones in the swarm -->
     <node pkg="carriers" type="centre_of_mass_server" name="centre_of_mass_server" output="screen"/>
 
+    <!-- Publishes the centroid constantly -->
+    <node pkg="carriers" type="centroid_publisher" name="centroid_publisher" output="screen"/>
+
+    <!-- Main file to control the swarm -->
     <node pkg="carriers" type="main" name="main" output="screen"/>
 </launch>
