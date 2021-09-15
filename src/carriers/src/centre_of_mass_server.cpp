@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     ros::NodeHandle node_handle;
 
     ros::ServiceServer COM=node_handle.advertiseService
-                            ("centre_of_mass", get_centre_of_mass);
+            ("centre_of_mass", get_centre_of_mass);
     ROS_INFO("Determining centre of mass");
     ros::spin();
 

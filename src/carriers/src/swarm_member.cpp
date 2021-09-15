@@ -12,14 +12,14 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
+#define PI 3.14159265359
+
 // Store the centroid in a global variable
 geometry_msgs::Pose centroid;
 void centroid_cb(const geometry_msgs::PoseConstPtr& msg){
     centroid = *msg;
     ROS_INFO("centroid z: %f", centroid.position.z);
 }
-
-#define PI 3.14159265359
 
 // Get the COM of the drones, then position drone based on drone_id and no. of drones and formation radius
 void horizontalFormation(ros::ServiceClient COM_client, int drone_id,
