@@ -22,59 +22,19 @@ void centroid_cb(const geometry_msgs::PoseConstPtr& msg){
 }
 
 // Get the COM of the drones, then position drone based on drone_id and no. of drones and formation radius
-void horizontalFormation(ros::ServiceClient COM_client, int drone_id,
-        int drone_count, ros::Publisher local_pos_pub, ros::Subscriber centroid_sub)
+void horizontalFormation(int drone_id, int drone_count,
+    ros::Publisher local_pos_pub, geometry_msgs::Point &centroid)
 {
-    int formation_radius;
-
-    // Will be used to give target position to the drone
-    geometry_msgs::PoseStamped target_pose;
-
-    carriers::CentreOfMass COM;
-    // Get the centrw of mass of th system
     ROS_INFO("HORIZONTAL_FORMATION");
-    // if (COM_client.call(COM))
-    // {
-    //   ROS_INFO("Got COM successfully");
-    // }
-    // else
-    // {
-    //   ROS_ERROR("Failed to call service centre_of_mass_server");
-    //   return;
-    // }
 
-    ros::Duration some_time(0.01);
-    centroid=*ros::topic::waitForMessage<geometry_msgs::Pose>("/centroid");
-
-    // Get the radius of formation
-    ros::param::get("/formation_radius", formation_radius);
-
-    // decide the position angle in the formation for the drone
-    double formation_position_angle=drone_id*2*PI/drone_count;
-
-    // print the formation position angle
-    // ROS_INFO("Drone count: %d Drone: %d Formation position angle: %f",
-    //         drone_count, drone_id, formation_position_angle);
-
-    // Assign the position
-    target_pose.pose.position.x=centroid.position.x+formation_radius*std::cos(formation_position_angle);
-    target_pose.pose.position.y=centroid.position.y+formation_radius*std::sin(formation_position_angle);
-    target_pose.pose.position.z=centroid.position.z;
-    // ROS_INFO("Centroid z: %f", centroid.position.z);
-    // ROS_INFO("COM x: %f y: %f z: %f", COM.response.COM.position.x,
-    //             COM.response.COM.position.y, COM.response.COM.position.z);
-
-    // ros::Rate rate(30);
-    // for(int i=0; i<10; i++)
-    // {
-    //     local_pos_pub.publish(target_pose);
-    //     rate.sleep();
-    // }
-    local_pos_pub.publish(target_pose);
+    // get the centroid for the formation
+    ros::param::get("/centroid/x", centroid.x);
+    ros::param::get("/centroid/y", centroid.y);
+    ros::param::get("/centroid/z", centroid.z);
 }
 
-void verticalFormation(ros::ServiceClient COM_client, int drone_id,
-        int drone_count, ros::Publisher local_pos_pub, ros::Subscriber centroid_sub)
+void verticalFormation(int drone_id, int drone_count,
+    ros::Publisher local_pos_pub, geometry_msgs::Point &centroid)
 {
     ROS_INFO("VERTICAL_FORMATION");
 }
@@ -107,11 +67,6 @@ int main(int argc, char** argv)
     ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>
             ("mavros/setpoint_position/local", 10);
 
-    // Used to keep track of the centroid of the swarm
-    ros::Subscriber centroid_sub;
-    // ros::Subscriber centroid_sub = nh.subscribe<geometry_msgs::Pose>
-    //         ("/centroid", 10, centroid_cb);
-
     // Arming client
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>
             ("mavros/cmd/arming");
@@ -120,16 +75,11 @@ int main(int argc, char** argv)
     ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
             ("mavros/set_mode");
 
-    // Client for getting the COM
-    ros::ServiceClient COM_client = nh.serviceClient<carriers::CentreOfMass>
-            ("/centre_of_mass");
-
     // Striing to store the current swarm state
     std::string swarm_state;
 
     //the setpoint publishing rate MUST be faster than 2Hz
     ros::Rate rate(20.0);
-
 
     ros::Time last_request = ros::Time::now();
     // wait for FCU connection
@@ -199,6 +149,9 @@ int main(int argc, char** argv)
         rate.sleep();
     }
 
+    // To store the centroid for the formation
+    geometry_msgs::Point centroid;
+
     // State machine
     while(swarm_state!="DISABLED")
     {
@@ -208,11 +161,11 @@ int main(int argc, char** argv)
 
         if(swarm_state=="HORIZONTAL_FORMATION")
         {
-            horizontalFormation(COM_client, drone_id, drone_count, local_pos_pub, centroid_sub);
+            horizontalFormation(drone_id, drone_count, local_pos_pub, centroid);
         }
         else if(swarm_state=="VERTICAL_FORMATION")
         {
-            verticalFormation(COM_client, drone_id, drone_count, local_pos_pub, centroid_sub);
+            verticalFormation(drone_id, drone_count, local_pos_pub, centroid);
         }
         else
         {

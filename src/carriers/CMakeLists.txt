@@ -137,16 +137,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(offb_node src/offb_node.cpp)
 
 add_executable(swarm_member src/swarm_member.cpp)
-
-add_executable(pose_transformer src/pose_transformer.cpp)
-
-add_executable(centre_of_mass_server src/centre_of_mass_server.cpp)
-# add_dependencies(centre_of_mass_server carriers_gencpp)
-
-add_executable(centroid_publisher src/centroid_publisher.cpp)
 
 add_executable(main src/main.cpp)
 
@@ -161,27 +153,11 @@ add_executable(main src/main.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(offb_node
-  ${catkin_LIBRARIES}
-)
-
 target_link_libraries(swarm_member
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(pose_transformer
-    ${catkin_LIBRARIES}
-)
-
-target_link_libraries(centre_of_mass_server
-    ${catkin_LIBRARIES}
-)
-
 target_link_libraries(main
-    ${catkin_LIBRARIES}
-)
-
-target_link_libraries(centroid_publisher
     ${catkin_LIBRARIES}
 )
 

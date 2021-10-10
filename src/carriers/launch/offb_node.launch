@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?><launch>
-    <arg name="drone_number" default="0"/>
-    <!-- The uav1 or uav2 etc namespace must match the namespace in multi_uav_mavros_sitl.launch -->
-    <group ns="uav$(arg drone_number)">
-        <node pkg="carriers" type="offb_node" name="offb_node" args="$(arg drone_number)" output="screen"/>
-    </group>
-</launch>
