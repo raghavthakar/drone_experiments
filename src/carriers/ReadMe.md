@@ -49,7 +49,7 @@ position of each drone in the global frame.
 Feel free to modify this launch file to launch as many drones as you wish (max 255). Please note the different namespaces for each drone, and the fact that each drone can be accessed via a different udp port (14540, 14541 and so on. Similarly 14580, 14581...).
 
 #### Launch the swarm
-Navigate to the home directory of this repository. Make sure it is built: `catkin_make`.
+Navigate to the home directory of this repository. Make sure it is built. Build using: `catkin_make`.
 
 Source the workspace: `source devel/setup.zsh`
 
