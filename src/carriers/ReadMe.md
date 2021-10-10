@@ -4,6 +4,9 @@ This project is an attempt at developing a fully decentralised system for format
 
 Presently the system is capable of gettting into a formation in a decentralised manner, for any number of drones (<10).
 
+Here are 5 drones:
+![5 drones making formation](https://github.com/raghavthakar/drone_experiments/blob/main/ReadMe_Resources/5_drone_formation.gif)
+
 #### To do:
 - Implement waypoint navigation for drones in formation
 - Implement facility to generate formations in any plane
