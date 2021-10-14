@@ -3,6 +3,10 @@
 // - Make a formation based on the number of drones in the swarm
 // - Then follow waypoint navigation in the formation
 
+// Essentially this file controls the low level behaviour of an individual agent
+// we determine the target position of the drone based on the formation frame position and heading
+// and then control the drone to be there
+
 #include <ros/ros.h>
 #include <cmath>
 #include "carriers/CentreOfMass.h"
@@ -14,29 +18,10 @@
 
 #define PI 3.14159265359
 
-// Store the centroid in a global variable
-geometry_msgs::Pose centroid;
-void centroid_cb(const geometry_msgs::PoseConstPtr& msg){
-    centroid = *msg;
-    ROS_INFO("centroid z: %f", centroid.position.z);
-}
-
-// Get the COM of the drones, then position drone based on drone_id and no. of drones and formation radius
-void horizontalFormation(int drone_id, int drone_count,
-    ros::Publisher local_pos_pub, geometry_msgs::Point &centroid)
+// Controller for keeping agent in position in horizonral formation
+void horizontalFormation(int drone_id, int drone_count)
 {
-    ROS_INFO("HORIZONTAL_FORMATION");
-
-    // get the centroid for the formation
-    ros::param::get("/centroid/x", centroid.x);
-    ros::param::get("/centroid/y", centroid.y);
-    ros::param::get("/centroid/z", centroid.z);
-}
-
-void verticalFormation(int drone_id, int drone_count,
-    ros::Publisher local_pos_pub, geometry_msgs::Point &centroid)
-{
-    ROS_INFO("VERTICAL_FORMATION");
+    ROS_INFO("drone id: %d drone count: %d", drone_id, drone_count);
 }
 
 //Store the current state in a global varibale through callback
@@ -143,29 +128,31 @@ int main(int argc, char** argv)
     }
     ROS_INFO("Armed: %d", current_state.armed);
 
+    // Starting position
     for(int i=0; i<250; i++)
     {
         local_pos_pub.publish(pose);
         rate.sleep();
     }
 
-    // To store the centroid for the formation
-    geometry_msgs::Point centroid;
+    ROS_INFO_STREAM(swarm_state);
+
 
     // State machine
     while(swarm_state!="DISABLED")
     {
         // To keep the drone count updated
         ros::param::get("/drone_count", drone_count);
+        ROS_INFO_STREAM(swarm_state);
         ros::param::get("/swarm_state", swarm_state);
 
         if(swarm_state=="HORIZONTAL_FORMATION")
         {
-            horizontalFormation(drone_id, drone_count, local_pos_pub, centroid);
+            horizontalFormation(drone_id, drone_count);
         }
         else if(swarm_state=="VERTICAL_FORMATION")
         {
-            verticalFormation(drone_id, drone_count, local_pos_pub, centroid);
+            // verticalFormation();
         }
         else
         {
