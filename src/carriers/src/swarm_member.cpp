@@ -18,10 +18,23 @@
 
 #define PI 3.14159265359
 
+// Global variable to track the centroid of the system
+geometry_msgs::Pose centroid;
+
 // Controller for keeping agent in position in horizonral formation
 void horizontalFormation(int drone_id, int drone_count)
 {
+    ROS_INFO("HORIZONTAL FORMATION");
     ROS_INFO("drone id: %d drone count: %d", drone_id, drone_count);
+
+    // ROS_INFO("Centroid x: %f y: %f z: %f", centroid.position.x,
+        // centroid.position.y, centroid.position.z);
+}
+
+// Callback to update the centroid
+void centroid_cb(const geometry_msgs::Pose::ConstPtr& cntrd){
+    centroid=*cntrd;
+    ROS_INFO("Centroid %f %f %f", centroid.position.x, centroid.position.y, centroid.position.z);
 }
 
 //Store the current state in a global varibale through callback
@@ -59,6 +72,10 @@ int main(int argc, char** argv)
     // Will let us set the drone to offboard mode
     ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
             ("mavros/set_mode");
+
+    // Mechnaism to automatically update the centroid of the formation
+    ros::Subscriber centroid_sub = nh.subscribe<geometry_msgs::Pose>
+            ("centroid", 10, centroid_cb);
 
     // Striing to store the current swarm state
     std::string swarm_state;
@@ -141,9 +158,10 @@ int main(int argc, char** argv)
     // State machine
     while(swarm_state!="DISABLED")
     {
+        ROS_INFO("Centroid x: %f y: %f z: %f", centroid.position.x,
+            centroid.position.y, centroid.position.z);
         // To keep the drone count updated
         ros::param::get("/drone_count", drone_count);
-        ROS_INFO_STREAM(swarm_state);
         ros::param::get("/swarm_state", swarm_state);
 
         if(swarm_state=="HORIZONTAL_FORMATION")
