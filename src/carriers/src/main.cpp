@@ -27,6 +27,11 @@ int main(int argc, char** argv)
     centroid.position.y=0;
     centroid.position.z=10;
 
+    // push the centroid to the paramater server
+    ros::param::set("/centroid/x", centroid.position.x);
+    ros::param::set("/centroid/y", centroid.position.y);
+    ros::param::set("/centroid/z", centroid.position.z);
+
     // publish the centroid
     centroid_publisher.publish(centroid);
 
@@ -34,6 +39,13 @@ int main(int argc, char** argv)
 
     std::string swarm_state="HORIZONTAL_FORMATION";
     ros::param::set("/swarm_state", swarm_state);
+
+    // ros::Rate rate(20);
+    // while(ros::ok())
+    // {
+    //     centroid_publisher.publish(centroid);
+    //     rate.sleep();
+    // }
     sleep(35);
 
     swarm_state="VERTICAL_FORMATION";
