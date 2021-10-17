@@ -19,11 +19,12 @@
 #define PI 3.14159265359
 
 // Controller for keeping agent in position in horizonral formation
-void horizontalFormation(int drone_id, int drone_count)
+void horizontalFormation(int drone_id, int drone_count, ros::Publisher local_pos_pub)
 {
     ROS_INFO("HORIZONTAL FORMATION");
     ROS_INFO("drone id: %d drone count: %d", drone_id, drone_count);
 
+    // get te centroid of the sustem from th param server
     geometry_msgs::Pose centroid;
     ros::param::get("/centroid/x", centroid.position.x);
     ros::param::get("/centroid/y", centroid.position.y);
@@ -32,8 +33,34 @@ void horizontalFormation(int drone_id, int drone_count)
     ROS_INFO("Centroid x: %f y: %f z: %f", centroid.position.x,
         centroid.position.y, centroid.position.z);
 
-    float x=3.5;
-    ROS_INFO("x is %f", x);
+    // get the frmation radius from the parameter server
+    float formation_radius;
+    ros::param::get("/formation_radius", formation_radius);
+
+    // fix the position of the drone with respect to this formation
+    // radius from the centroid and drone id
+    geometry_msgs::PoseStamped target_position;
+    target_position.pose=centroid;
+    target_position.pose.position.x+=formation_radius;
+
+    // convert the drone target position to local frame of drone
+    // by subtracting the intiial position of the drone
+    int init_position_x;
+    int init_position_y;
+    int init_position_z;
+
+    // get the intiial position of the drone
+    ros::param::get("initial_position/x", init_position_x);
+    ros::param::get("initial_position/y", init_position_y);
+    ros::param::get("initial_position/z", init_position_z);
+
+    // subtract from target position to convert frames
+    target_position.pose.position.x-=init_position_x;
+    target_position.pose.position.y-=init_position_y;
+    target_position.pose.position.z-=init_position_z;
+
+    local_pos_pub.publish(target_position);
+    ROS_INFO("Drone formation %f %f %f ", target_position.pose.position.x, target_position.pose.position.y, target_position.pose.position.z);
 }
 
 //Store the current state in a global varibale through callback
@@ -163,7 +190,7 @@ int main(int argc, char** argv)
 
         if(swarm_state=="HORIZONTAL_FORMATION")
         {
-            horizontalFormation(drone_id, drone_count);
+            horizontalFormation(drone_id, drone_count, local_pos_pub);
         }
         else if(swarm_state=="VERTICAL_FORMATION")
         {

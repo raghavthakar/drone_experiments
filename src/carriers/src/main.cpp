@@ -23,9 +23,9 @@ int main(int argc, char** argv)
 
     // Centroid will represent the system as a whole
     geometry_msgs::Pose centroid;
-    centroid.position.x=45;
+    centroid.position.x=15;
     centroid.position.y=0;
-    centroid.position.z=10;
+    centroid.position.z=20;
 
     // push the centroid to the paramater server
     ros::param::set("/centroid/x", centroid.position.x);
@@ -40,12 +40,11 @@ int main(int argc, char** argv)
     std::string swarm_state="HORIZONTAL_FORMATION";
     ros::param::set("/swarm_state", swarm_state);
 
-    // ros::Rate rate(20);
-    // while(ros::ok())
-    // {
-    //     centroid_publisher.publish(centroid);
-    //     rate.sleep();
-    // }
+    ros::Rate rate(20);
+    while(ros::ok())
+    {
+        continue;
+    }
     sleep(35);
 
     swarm_state="VERTICAL_FORMATION";
