@@ -18,30 +18,23 @@
 
 #define PI 3.14159265359
 
-// Controller for keeping agent in position in horizonral formation
-void horizontalFormation(int drone_id, int drone_count, ros::Publisher local_pos_pub)
+// get the formation centroid from the parameter server
+geometry_msgs::Pose getCentroid()
 {
-    ROS_INFO("HORIZONTAL FORMATION");
-    ROS_INFO("drone id: %d drone count: %d", drone_id, drone_count);
-
-    // get te centroid of the sustem from th param server
     geometry_msgs::Pose centroid;
     ros::param::get("/centroid/x", centroid.position.x);
     ros::param::get("/centroid/y", centroid.position.y);
     ros::param::get("/centroid/z", centroid.position.z);
 
-    ROS_INFO("Centroid x: %f y: %f z: %f", centroid.position.x,
-        centroid.position.y, centroid.position.z);
+    return centroid;
+}
 
-    // get the frmation radius from the parameter server
-    float formation_radius;
-    ros::param::get("/formation_radius", formation_radius);
-
-    // fix the position of the drone with respect to this formation
-    // radius from the centroid and drone id
+// returns the target position of the drone in the local frame
+geometry_msgs::PoseStamped getTargetPosition(geometry_msgs::Pose centroid,
+    int drone_id, int drone_count, float formation_radius)
+{
     geometry_msgs::PoseStamped target_position;
     target_position.pose=centroid;
-    // target_position.pose.position.x+=formation_radius;
 
     // set position based on drone id
     target_position.pose.position.x+=formation_radius*cos(drone_id*2*PI/drone_count);
@@ -66,10 +59,28 @@ void horizontalFormation(int drone_id, int drone_count, ros::Publisher local_pos
     target_position.pose.position.y-=init_position_y;
     target_position.pose.position.z-=init_position_z;
 
-    ROS_INFO("drone %d offset: x: %d y: %d", drone_id, -1*init_position_x, -1*init_position_y);
+    return target_position;
+}
 
+// Controller for keeping agent in position in horizonral formation
+void horizontalFormation(int drone_id, int drone_count, ros::Publisher local_pos_pub)
+{
+    // ROS_INFO("HORIZONTAL FORMATION");
+    // ROS_INFO("drone id: %d drone count: %d", drone_id, drone_count);
+
+    // get te centroid of the sustem from th param server
+    geometry_msgs::Pose centroid=getCentroid();
+
+    // get the frmation radius from the parameter server
+    float formation_radius;
+    ros::param::get("/formation_radius", formation_radius);
+
+    // get the target positio of thr drone in its local frame
+    geometry_msgs::PoseStamped target_position=getTargetPosition(centroid,
+        drone_id, drone_count, formation_radius);
+
+    // publish the target position to the drone
     local_pos_pub.publish(target_position);
-    ROS_INFO("Drone %d formation %f %f %f ", drone_id, target_position.pose.position.x, target_position.pose.position.y, target_position.pose.position.z);
 }
 
 //Store the current state in a global varibale through callback

@@ -11,6 +11,16 @@
 // - NAVIGATE
 // - DISABLED
 
+// Function to make the formation around a specified point
+// maybe impleent this as a service
+void moveTo(geometry_msgs::Pose centroid)
+{
+    // push the centroid to the paramater server
+    ros::param::set("/centroid/x", centroid.position.x);
+    ros::param::set("/centroid/y", centroid.position.y);
+    ros::param::set("/centroid/z", centroid.position.z);
+}
+
 // THIS FILE CONTROLS THE HIGH LEVEL BEHAVIOUR OF THE SWARM
 int main(int argc, char** argv)
 {
@@ -27,18 +37,13 @@ int main(int argc, char** argv)
     centroid.position.y=0;
     centroid.position.z=20;
 
-    // push the centroid to the paramater server
-    ros::param::set("/centroid/x", centroid.position.x);
-    ros::param::set("/centroid/y", centroid.position.y);
-    ros::param::set("/centroid/z", centroid.position.z);
-
-    // publish the centroid
-    centroid_publisher.publish(centroid);
-
     ros::param::set("/formation_radius", FORMATION_RADIUS);
 
     std::string swarm_state="HORIZONTAL_FORMATION";
     ros::param::set("/swarm_state", swarm_state);
+
+    // move the system to this point
+    moveTo(centroid);
 
     ros::Rate rate(20);
     while(ros::ok())
