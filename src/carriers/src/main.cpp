@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
     // Centroid will represent the system as a whole
     geometry_msgs::Pose centroid;
-    centroid.position.x=15;
+    centroid.position.x=0;
     centroid.position.y=0;
     centroid.position.z=20;
 

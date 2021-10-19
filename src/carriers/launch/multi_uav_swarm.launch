@@ -21,6 +21,10 @@
         <arg name="drone_number" value="3"/>
     </include>
 
+    <include file="$(find carriers)/launch/swarm_member.launch">
+        <arg name="drone_number" value="4"/>
+    </include>
+
     <!-- Main file to control the swarm -->
     <node pkg="carriers" type="main" name="main" output="screen"/>
 </launch>

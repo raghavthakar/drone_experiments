@@ -41,7 +41,14 @@ void horizontalFormation(int drone_id, int drone_count, ros::Publisher local_pos
     // radius from the centroid and drone id
     geometry_msgs::PoseStamped target_position;
     target_position.pose=centroid;
-    target_position.pose.position.x+=formation_radius;
+    // target_position.pose.position.x+=formation_radius;
+
+    // set position based on drone id
+    target_position.pose.position.x+=formation_radius*cos(drone_id*2*PI/drone_count);
+    target_position.pose.position.y+=formation_radius*sin(drone_id*2*PI/drone_count);
+
+    ROS_INFO("drone %d cos: %f sin: %f", drone_id, formation_radius*
+        cos(drone_id*2*PI/drone_count), formation_radius*sin(drone_id*2*PI/drone_count));
 
     // convert the drone target position to local frame of drone
     // by subtracting the intiial position of the drone
@@ -59,8 +66,10 @@ void horizontalFormation(int drone_id, int drone_count, ros::Publisher local_pos
     target_position.pose.position.y-=init_position_y;
     target_position.pose.position.z-=init_position_z;
 
+    ROS_INFO("drone %d offset: x: %d y: %d", drone_id, -1*init_position_x, -1*init_position_y);
+
     local_pos_pub.publish(target_position);
-    ROS_INFO("Drone formation %f %f %f ", target_position.pose.position.x, target_position.pose.position.y, target_position.pose.position.z);
+    ROS_INFO("Drone %d formation %f %f %f ", drone_id, target_position.pose.position.x, target_position.pose.position.y, target_position.pose.position.z);
 }
 
 //Store the current state in a global varibale through callback
