@@ -15,33 +15,21 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
+#include <nav_msgs/Path.h>
 
+#define FORMATION_RADIUS 2
 #define PI 3.14159265359
 
-// get the formation centroid from the parameter server
-geometry_msgs::Pose getCentroid()
-{
-    geometry_msgs::Pose centroid;
-    ros::param::get("/centroid/x", centroid.position.x);
-    ros::param::get("/centroid/y", centroid.position.y);
-    ros::param::get("/centroid/z", centroid.position.z);
-
-    return centroid;
-}
-
 // returns the target position of the drone in the local frame
-geometry_msgs::PoseStamped getTargetPosition(geometry_msgs::Pose centroid,
-    int drone_id, int drone_count, float formation_radius)
+geometry_msgs::PoseStamped getDroneTargetPose(geometry_msgs::PoseStamped swarm_centroid,
+    int drone_id, int drone_count)
 {
-    geometry_msgs::PoseStamped target_position;
-    target_position.pose=centroid;
+    geometry_msgs::PoseStamped target_pose;
+    target_pose=swarm_centroid;
 
     // set position based on drone id
-    target_position.pose.position.x+=formation_radius*cos(drone_id*2*PI/drone_count);
-    target_position.pose.position.y+=formation_radius*sin(drone_id*2*PI/drone_count);
-
-    ROS_INFO("drone %d cos: %f sin: %f", drone_id, formation_radius*
-        cos(drone_id*2*PI/drone_count), formation_radius*sin(drone_id*2*PI/drone_count));
+    target_pose.pose.position.x+=FORMATION_RADIUS*cos(drone_id*2*PI/drone_count);
+    target_pose.pose.position.y+=FORMATION_RADIUS*sin(drone_id*2*PI/drone_count);
 
     // convert the drone target position to local frame of drone
     // by subtracting the intiial position of the drone
@@ -55,32 +43,33 @@ geometry_msgs::PoseStamped getTargetPosition(geometry_msgs::Pose centroid,
     ros::param::get("initial_position/z", init_position_z);
 
     // subtract from target position to convert frames
-    target_position.pose.position.x-=init_position_x;
-    target_position.pose.position.y-=init_position_y;
-    target_position.pose.position.z-=init_position_z;
+    target_pose.pose.position.x-=init_position_x;
+    target_pose.pose.position.y-=init_position_y;
+    target_pose.pose.position.z-=init_position_z;
 
-    return target_position;
+    return target_pose;
 }
 
-// Controller for keeping agent in position in horizonral formation
-void horizontalFormation(int drone_id, int drone_count, ros::Publisher local_pos_pub)
+// checks to see if all the drones are in the right place for correct formation
+bool inFormation(geometry_msgs::PoseStamped centroid_pose, int drone_id, int drone_count)
 {
-    // ROS_INFO("HORIZONTAL FORMATION");
-    // ROS_INFO("drone id: %d drone count: %d", drone_id, drone_count);
+    
+}
 
-    // get te centroid of the sustem from th param server
-    geometry_msgs::Pose centroid=getCentroid();
+bool formation(geometry_msgs::PoseStamped centroid_pose, int drone_id, int drone_count, ros::Publisher local_pos_pub)
+{
+    bool in_formation=false;
+    ROS_INFO("Drone %d in formation function!", drone_id);
 
-    // get the frmation radius from the parameter server
-    float formation_radius;
-    ros::param::get("/formation_radius", formation_radius);
-
-    // get the target positio of thr drone in its local frame
-    geometry_msgs::PoseStamped target_position=getTargetPosition(centroid,
-        drone_id, drone_count, formation_radius);
+    // will store the target pose of the drone in formation
+    geometry_msgs::PoseStamped drone_target_pose=getDroneTargetPose(centroid_pose,
+        drone_id, drone_count);
 
     // publish the target position to the drone
-    local_pos_pub.publish(target_position);
+    local_pos_pub.publish(drone_target_pose);
+
+
+    return inFormation(centroid_pose, int drone_id, int drone_count);
 }
 
 //Store the current state in a global varibale through callback
@@ -119,9 +108,8 @@ int main(int argc, char** argv)
     ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
             ("mavros/set_mode");
 
-    // Mechnaism to automatically update the centroid of the formation
-    // ros::Subscriber centroid_sub = nh.subscribe<geometry_msgs::Pose>
-    //         ("centroid", 10, centroid_cb);
+    // Stores the path that the centroid of the system must follow
+    nav_msgs::Path path;
 
     // Striing to store the current swarm state
     std::string swarm_state;
@@ -200,25 +188,21 @@ int main(int argc, char** argv)
 
     ROS_INFO_STREAM(swarm_state);
 
+    // make-do path for now with just one pose
+    pose.pose.position.z=20;
+    path.poses.push_back(pose);
 
     // State machine
     while(swarm_state!="DISABLED")
     {
-        // To keep the drone count updated
-        ros::param::get("/drone_count", drone_count);
-        ros::param::get("/swarm_state", swarm_state);
+        for(auto formation_centroid:path.poses)
+        {
+            // To keep the drone count updated
+            ros::param::get("/drone_count", drone_count);
+            ros::param::get("/swarm_state", swarm_state);
 
-        if(swarm_state=="HORIZONTAL_FORMATION")
-        {
-            horizontalFormation(drone_id, drone_count, local_pos_pub);
-        }
-        else if(swarm_state=="VERTICAL_FORMATION")
-        {
-            // verticalFormation();
-        }
-        else
-        {
-            break;
+            // keep going till the formstion is made around the target
+            while(!formation(formation_centroid, drone_id, drone_count, local_pos_pub));
         }
     }
 
