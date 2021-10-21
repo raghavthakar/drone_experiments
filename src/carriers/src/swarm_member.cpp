@@ -53,7 +53,7 @@ geometry_msgs::PoseStamped getDroneTargetPose(geometry_msgs::PoseStamped swarm_c
 // checks to see if all the drones are in the right place for correct formation
 bool inFormation(geometry_msgs::PoseStamped centroid_pose, int drone_id, int drone_count)
 {
-    
+    return false;
 }
 
 bool formation(geometry_msgs::PoseStamped centroid_pose, int drone_id, int drone_count, ros::Publisher local_pos_pub)
