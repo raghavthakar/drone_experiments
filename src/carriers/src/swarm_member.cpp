@@ -18,19 +18,29 @@
 #include <nav_msgs/Path.h>
 
 #define FORMATION_RADIUS 2
+#define POSITION_ERROR_LIMIT 0.2
 #define PI 3.14159265359
 
-// returns the target position of the drone in the local frame
-geometry_msgs::PoseStamped getDroneTargetPose(geometry_msgs::PoseStamped swarm_centroid,
-    int drone_id, int drone_count)
+//Store the current state in a global varibale through callback
+mavros_msgs::State current_state;
+void state_cb(const mavros_msgs::State::ConstPtr& msg){
+    ROS_INFO("state callback!");
+    current_state = *msg;
+}
+
+// store the current position of the drone in global variable thrugh callback
+geometry_msgs::PoseStamped current_position;
+void position_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
+    ROS_INFO("inside callback!");
+    current_position=*msg;
+    ROS_INFO("%g", current_position.pose.position.x);
+    ROS_INFO("%g", current_position.pose.position.y);
+    ROS_INFO("%g", current_position.pose.position.z);
+}
+
+// converts the frame of the drone to its local fraeme
+geometry_msgs::PoseStamped convertToLocal(geometry_msgs::PoseStamped target_pose)
 {
-    geometry_msgs::PoseStamped target_pose;
-    target_pose=swarm_centroid;
-
-    // set position based on drone id
-    target_pose.pose.position.x+=FORMATION_RADIUS*cos(drone_id*2*PI/drone_count);
-    target_pose.pose.position.y+=FORMATION_RADIUS*sin(drone_id*2*PI/drone_count);
-
     // convert the drone target position to local frame of drone
     // by subtracting the intiial position of the drone
     int init_position_x;
@@ -50,16 +60,57 @@ geometry_msgs::PoseStamped getDroneTargetPose(geometry_msgs::PoseStamped swarm_c
     return target_pose;
 }
 
-// checks to see if all the drones are in the right place for correct formation
-bool inFormation(geometry_msgs::PoseStamped centroid_pose, int drone_id, int drone_count)
+// return the euclidean distance between two poses
+double euclideanDistance(geometry_msgs::PoseStamped drone_target_pose,
+    geometry_msgs::PoseStamped current_position)
 {
+    return sqrt((drone_target_pose.pose.position.x-current_position.pose.position.x)*
+                (drone_target_pose.pose.position.x-current_position.pose.position.x)+
+                (drone_target_pose.pose.position.y-current_position.pose.position.y)*
+                (drone_target_pose.pose.position.y-current_position.pose.position.y)+
+                (drone_target_pose.pose.position.z-current_position.pose.position.z)*
+                (drone_target_pose.pose.position.z-current_position.pose.position.z));
+}
+
+// returns the target position of the drone in the local frame
+geometry_msgs::PoseStamped getDroneTargetPose(geometry_msgs::PoseStamped swarm_centroid,
+    int drone_id, int drone_count)
+{
+    geometry_msgs::PoseStamped target_pose;
+    target_pose=swarm_centroid;
+
+    // set position based on drone id
+    target_pose.pose.position.x+=FORMATION_RADIUS*cos(drone_id*2*PI/drone_count);
+    target_pose.pose.position.y+=FORMATION_RADIUS*sin(drone_id*2*PI/drone_count);
+
+    // convert the positions to local frame of drone
+    target_pose=convertToLocal(target_pose);
+
+    return target_pose;
+}
+
+// checks to see if all the drones are in the right place for correct formation
+bool inFormation(geometry_msgs::PoseStamped drone_target_pose, int drone_id,
+    int drone_count)
+{
+    // each drone calculates the error in its position and target individually
+    // and updates its paramater
+    const std::string current_position_topic="mavros/local_position/pose";
+    geometry_msgs::PoseStamped::ConstPtr current_position=ros::topic::waitForMessage<geometry_msgs::PoseStamped>(current_position_topic);
+
+    // check the parameter of each drone and if all are in formation
+    // then return true
+    ROS_INFO("%g", euclideanDistance(drone_target_pose, *current_position));
+    if(euclideanDistance(drone_target_pose, *current_position)<1.00)
+        return true;
+
     return false;
 }
 
-bool formation(geometry_msgs::PoseStamped centroid_pose, int drone_id, int drone_count, ros::Publisher local_pos_pub)
+bool formation(geometry_msgs::PoseStamped centroid_pose, int drone_id,
+    int drone_count, ros::Publisher local_pos_pub)
 {
     bool in_formation=false;
-    ROS_INFO("Drone %d in formation function!", drone_id);
 
     // will store the target pose of the drone in formation
     geometry_msgs::PoseStamped drone_target_pose=getDroneTargetPose(centroid_pose,
@@ -69,14 +120,10 @@ bool formation(geometry_msgs::PoseStamped centroid_pose, int drone_id, int drone
     local_pos_pub.publish(drone_target_pose);
 
 
-    return inFormation(centroid_pose, int drone_id, int drone_count);
+    return inFormation(drone_target_pose, drone_id, drone_count);
+    // return false;
 }
 
-//Store the current state in a global varibale through callback
-mavros_msgs::State current_state;
-void state_cb(const mavros_msgs::State::ConstPtr& msg){
-    current_state = *msg;
-}
 
 int main(int argc, char** argv)
 {
@@ -96,9 +143,14 @@ int main(int argc, char** argv)
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
             ("mavros/state", 10, state_cb);
 
+    // track the current position of the drone in global scope
+    // ros::Subscriber position_sub = nh.subscribe<geometry_msgs::PoseStamped>
+    //         ("mavros/local_position/pose", 10, position_cb);
+
     // Used to establish stable stream before setting to offboard
     ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>
             ("mavros/setpoint_position/local", 10);
+
 
     // Arming client
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>
@@ -112,7 +164,7 @@ int main(int argc, char** argv)
     nav_msgs::Path path;
 
     // Striing to store the current swarm state
-    std::string swarm_state;
+    std::string formation_state;
 
     //the setpoint publishing rate MUST be faster than 2Hz
     ros::Rate rate(20.0);
@@ -186,20 +238,20 @@ int main(int argc, char** argv)
         rate.sleep();
     }
 
-    ROS_INFO_STREAM(swarm_state);
+    ROS_INFO_STREAM(formation_state);
 
     // make-do path for now with just one pose
     pose.pose.position.z=20;
     path.poses.push_back(pose);
 
     // State machine
-    while(swarm_state!="DISABLED")
+    while(formation_state!="DISABLED")
     {
         for(auto formation_centroid:path.poses)
         {
             // To keep the drone count updated
             ros::param::get("/drone_count", drone_count);
-            ros::param::get("/swarm_state", swarm_state);
+            ros::param::get("/formation_state", formation_state);
 
             // keep going till the formstion is made around the target
             while(!formation(formation_centroid, drone_id, drone_count, local_pos_pub));

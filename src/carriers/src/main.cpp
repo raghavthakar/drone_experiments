@@ -39,8 +39,8 @@ int main(int argc, char** argv)
 
     ros::param::set("/formation_radius", FORMATION_RADIUS);
 
-    std::string swarm_state="HORIZONTAL_FORMATION";
-    ros::param::set("/swarm_state", swarm_state);
+    std::string formation_state="HORIZONTAL_FORMATION";
+    ros::param::set("/formation_state", formation_state);
 
     // move the system to this point
     moveTo(centroid);
@@ -52,12 +52,12 @@ int main(int argc, char** argv)
     }
     sleep(35);
 
-    swarm_state="VERTICAL_FORMATION";
-    ros::param::set("/swarm_state", swarm_state);
+    formation_state="VERTICAL_FORMATION";
+    ros::param::set("/formation_state", formation_state);
     sleep(5);
 
-    swarm_state="DISABLED";
-    ros::param::set("/swarm_state", swarm_state);
+    formation_state="DISABLED";
+    ros::param::set("/formation_state", formation_state);
 
     return 1;
 }
