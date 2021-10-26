@@ -9,7 +9,7 @@
 
 #include <ros/ros.h>
 #include <cmath>
-#include "carriers/CentreOfMass.h"
+#include <std_msgs/Float64.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <mavros_msgs/CommandBool.h>
@@ -61,7 +61,7 @@ geometry_msgs::PoseStamped convertToLocal(geometry_msgs::PoseStamped target_pose
 }
 
 // return the euclidean distance between two poses
-double euclideanDistance(geometry_msgs::PoseStamped drone_target_pose,
+float euclideanDistance(geometry_msgs::PoseStamped drone_target_pose,
     geometry_msgs::PoseStamped current_position)
 {
     return sqrt((drone_target_pose.pose.position.x-current_position.pose.position.x)*
@@ -91,24 +91,54 @@ geometry_msgs::PoseStamped getDroneTargetPose(geometry_msgs::PoseStamped swarm_c
 
 // checks to see if all the drones are in the right place for correct formation
 bool inFormation(geometry_msgs::PoseStamped drone_target_pose, int drone_id,
-    int drone_count)
+    int drone_count, ros::NodeHandle &nh)
 {
+    std_msgs::Float64 euclidean_distance;
+
     // each drone calculates the error in its position and target individually
     // and updates its paramater
     const std::string current_position_topic="mavros/local_position/pose";
     geometry_msgs::PoseStamped::ConstPtr current_position=ros::topic::waitForMessage<geometry_msgs::PoseStamped>(current_position_topic);
 
+    // get the euclidean distance between currentand target pose and store it
+    euclidean_distance.data=euclideanDistance(drone_target_pose, *current_position);
+
+    // put this euclidean dustance on the paramter server
+    ros::param::set("distance_from_target_pose", euclidean_distance.data);
+
     // check the parameter of each drone and if all are in formation
     // then return true
-    ROS_INFO("%g", euclideanDistance(drone_target_pose, *current_position));
-    if(euclideanDistance(drone_target_pose, *current_position)<1.00)
+    if(euclidean_distance.data<1.0)
+    {
+        std::string other_drone_distance_from_target_pose_param="/uav-/distance_from_target_pose";
+        for(int i=0; i<drone_count; i++)
+        {
+            if(i==drone_id) continue;
+
+            // i think what is happenin right now is that the systwem checks for
+            // target reached for older targets as well which causes rest of the
+            // formation to go ahead
+            // can be solved by adding a target no. as another param to be checked
+
+            other_drone_distance_from_target_pose_param[4]=i+'0';
+            ROS_INFO_STREAM(other_drone_distance_from_target_pose_param);
+            std_msgs::Float64 other_drone_distance_from_target_pose;
+            ros::param::get(other_drone_distance_from_target_pose_param,
+                other_drone_distance_from_target_pose.data);
+            if(other_drone_distance_from_target_pose.data>1.0)
+            {
+                ROS_INFO("Drone %d says %d not in formation", drone_id, i);
+                return false;
+            }
+        }
         return true;
+    }
 
     return false;
 }
 
 bool formation(geometry_msgs::PoseStamped centroid_pose, int drone_id,
-    int drone_count, ros::Publisher local_pos_pub)
+    int drone_count, ros::Publisher local_pos_pub, ros::NodeHandle &nh)
 {
     bool in_formation=false;
 
@@ -120,7 +150,7 @@ bool formation(geometry_msgs::PoseStamped centroid_pose, int drone_id,
     local_pos_pub.publish(drone_target_pose);
 
 
-    return inFormation(drone_target_pose, drone_id, drone_count);
+    return inFormation(drone_target_pose, drone_id, drone_count, nh);
     // return false;
 }
 
@@ -244,6 +274,9 @@ int main(int argc, char** argv)
     pose.pose.position.z=20;
     path.poses.push_back(pose);
 
+    pose.pose.position.x=25;
+    path.poses.push_back(pose);
+
     // State machine
     while(formation_state!="DISABLED")
     {
@@ -254,7 +287,7 @@ int main(int argc, char** argv)
             ros::param::get("/formation_state", formation_state);
 
             // keep going till the formstion is made around the target
-            while(!formation(formation_centroid, drone_id, drone_count, local_pos_pub));
+            while(!formation(formation_centroid, drone_id, drone_count, local_pos_pub, nh));
         }
     }
 
