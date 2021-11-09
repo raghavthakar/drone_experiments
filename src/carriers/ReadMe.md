@@ -1,14 +1,22 @@
 ## Background
 
-This project is an attempt at developing a fully decentralised system for formation and navigation of drone swarms. The motive behind this project is to create an abstraction layer that allows one to control swarm behaviour with simple service calls, with the actual operations taking care of themselves.
+This project is an attempt at developing a fully decentralised system for formation and navigation of multiple drone. The motive behind this project is to create an abstraction layer that allows one to control swarm behaviour with simple service calls, with the actual operations taking care of themselves.
 
-Presently the system is capable of gettting into a formation in a decentralised manner, for any number of drones (<10).
+Presently the system is capable of gettting into a formation in a decentralised manner and following a set of waypoints, for any number of drones (<10).
 
 Here are 5 drones:
 ![5 drones making formation](https://github.com/raghavthakar/drone_experiments/blob/main/ReadMe_Resources/5_drone_formation.gif)
 
+## Concept
+
+Every drone is assigned a drone ID before the start of the mission. The ID is an integer number that dictates the drones position in the formatotion. Each drone identifies the number of drones in the formation and using the ID, calculates where it should place itself to form a symmetric formation around a waypoint.
+
+Once the position has been calculated, each drone converges to the desired position, and compares every other drone's position with where they should be in the formation. If every drone is found to be close to its desired formation, each drone independently decides that the formation
+is ready, and repeats the process around the next waypoint.
+
+Presently, every drone has been given the same list of waypoints. In the future I would like to compute the plan onboard and distribute it among the other agents.
+
 #### To do:
-- Implement waypoint navigation for drones in formation
 - Implement facility to generate formations in any plane
 
 ## Try It Yourself

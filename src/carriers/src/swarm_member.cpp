@@ -90,8 +90,8 @@ geometry_msgs::PoseStamped getDroneTargetPose(geometry_msgs::PoseStamped swarm_c
 }
 
 // checks to see if all the drones are in the right place for correct formation
-bool inFormation(geometry_msgs::PoseStamped drone_target_pose, int drone_id,
-    int drone_count, ros::NodeHandle &nh)
+bool inFormation(geometry_msgs::PoseStamped drone_target_pose, int waypoint_no,
+    int drone_id, int drone_count, ros::NodeHandle &nh)
 {
     std_msgs::Float64 euclidean_distance;
 
@@ -104,14 +104,18 @@ bool inFormation(geometry_msgs::PoseStamped drone_target_pose, int drone_id,
     euclidean_distance.data=euclideanDistance(drone_target_pose, *current_position);
 
     // put this euclidean dustance on the paramter server
-    ros::param::set("distance_from_target_pose", euclidean_distance.data);
+    // ros::param::set("distance_from_target_pose", euclidean_distance.data);
+
+    // ROS_INFO("Drone %d waypoint no %d", drone_id, waypoint_no);
 
     // check the parameter of each drone and if all are in formation
     // then return true
     if(euclidean_distance.data<1.0)
     {
         std::string other_drone_distance_from_target_pose_param="/uav-/distance_from_target_pose";
-        for(int i=0; i<drone_count; i++)
+        std::string other_drone_waypoint_no_param="/uav-/waypoint_no";
+        int other_drone_waypoint_no;
+        /*for(int i=0; i<drone_count; i++)
         {
             if(i==drone_id) continue;
 
@@ -120,24 +124,35 @@ bool inFormation(geometry_msgs::PoseStamped drone_target_pose, int drone_id,
             // formation to go ahead
             // can be solved by adding a target no. as another param to be checked
 
+            // check if all drones have the same waypoint_no
+            other_drone_waypoint_no_param[4]=1+'0';
+            ros::param::get(other_drone_waypoint_no_param, other_drone_waypoint_no);
+
+
+            // the drones need to only move on to the next target once all the
+            // dornes have reached earlier target/waupoint
+
+
             other_drone_distance_from_target_pose_param[4]=i+'0';
-            ROS_INFO_STREAM(other_drone_distance_from_target_pose_param);
+            // ROS_INFO_STREAM(other_drone_distance_from_target_pose_param);
             std_msgs::Float64 other_drone_distance_from_target_pose;
             ros::param::get(other_drone_distance_from_target_pose_param,
                 other_drone_distance_from_target_pose.data);
-            if(other_drone_distance_from_target_pose.data>1.0)
+
+            if(other_drone_distance_from_target_pose.data>1.0 || waypoint_no!=other_drone_waypoint_no)
             {
-                ROS_INFO("Drone %d says %d not in formation", drone_id, i);
+                // ROS_INFO("Drone %d says %d not in formation", drone_id, i);
+                // ROS_INFO("My waypoint_no: %d drone %d waypoint_no: %d", waypoint_no, i, other_drone_waypoint_no);
                 return false;
             }
-        }
+        }*/
         return true;
     }
 
     return false;
 }
 
-bool formation(geometry_msgs::PoseStamped centroid_pose, int drone_id,
+bool formation(geometry_msgs::PoseStamped centroid_pose, int waypoint_no, int drone_id,
     int drone_count, ros::Publisher local_pos_pub, ros::NodeHandle &nh)
 {
     bool in_formation=false;
@@ -150,7 +165,7 @@ bool formation(geometry_msgs::PoseStamped centroid_pose, int drone_id,
     local_pos_pub.publish(drone_target_pose);
 
 
-    return inFormation(drone_target_pose, drone_id, drone_count, nh);
+    return inFormation(drone_target_pose, waypoint_no, drone_id, drone_count, nh);
     // return false;
 }
 
@@ -180,7 +195,6 @@ int main(int argc, char** argv)
     // Used to establish stable stream before setting to offboard
     ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>
             ("mavros/setpoint_position/local", 10);
-
 
     // Arming client
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>
@@ -277,18 +291,31 @@ int main(int argc, char** argv)
     pose.pose.position.x=25;
     path.poses.push_back(pose);
 
-    // State machine
-    while(formation_state!="DISABLED")
-    {
-        for(auto formation_centroid:path.poses)
-        {
-            // To keep the drone count updated
-            ros::param::get("/drone_count", drone_count);
-            ros::param::get("/formation_state", formation_state);
+    pose.pose.position.y=25;
+    path.poses.push_back(pose);
 
-            // keep going till the formstion is made around the target
-            while(!formation(formation_centroid, drone_id, drone_count, local_pos_pub, nh));
-        }
+    pose.pose.position.y=-25;
+    path.poses.push_back(pose);
+
+
+    int waypoint_no=1; // tracks the waypoint that the system is approaching
+    // State machine
+    for(auto formation_centroid:path.poses)
+    {
+        // To keep the drone count updated
+        ros::param::get("/drone_count", drone_count);
+        ros::param::get("/formation_state", formation_state);
+
+        // update the current waypoint number on the param server
+        ros::param::set("waypoint_no", waypoint_no);
+
+        ROS_INFO("Drone %d waypoint num: %d", waypoint_no, drone_id);
+
+        // keep going till the formstion is made around the target
+        while(!formation(formation_centroid, waypoint_no, drone_id, drone_count, local_pos_pub, nh)
+                &&formation_state!="DISABLED");
+
+        waypoint_no++; // update the waypoint number once it has been reached
     }
 
     ROS_INFO("All good, exiting!");
