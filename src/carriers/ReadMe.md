@@ -34,7 +34,8 @@ Presently, every drone has been given the same list of waypoints. In the future 
 
 #### Setup the PX4-Autopilot
 
-```cd ~/PX4-Autopilot/ #or wherever the Autopilot installation is in your system
+```
+cd ~/PX4-Autopilot/ #or wherever the Autopilot installation is in your system
 source Tools/setup_gazebo.bash $(pwd) $(pwd)/build/px4_sitl_default
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)/Tools/sitl_gazebo
