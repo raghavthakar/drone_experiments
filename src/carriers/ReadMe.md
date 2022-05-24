@@ -37,7 +37,8 @@ Presently, every drone has been given the same list of waypoints. In the future 
 ```cd ~/PX4-Autopilot/ #or wherever the Autopilot installation is in your system
 source Tools/setup_gazebo.bash $(pwd) $(pwd)/build/px4_sitl_default
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)
-export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)/Tools/sitl_gazebo```
+export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)/Tools/sitl_gazebo
+```
 
 ### Modification to the px4 launch file
 To add a little more functionality, modify the file `single_vehicle_spawn.launch` in the autopilot firmware by adding the following lines:
