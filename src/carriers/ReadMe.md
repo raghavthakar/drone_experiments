@@ -4,15 +4,16 @@ This project is an attempt at developing a fully decentralised system for format
 
 Presently the system is capable of gettting into a formation in a decentralised manner and following a set of waypoints, for any number of drones (<10).
 
+The Token Ring Algorithm was used to ensure consistency mutual exclusion as the agents settle into a formation.
+
 Here are 5 drones:
-![5 drones making formation](https://github.com/raghavthakar/drone_experiments/blob/main/ReadMe_Resources/5_drone_formation.gif)
+![5 drones making formation](https://github.com/raghavthakar/drone_experiments/blob/main/ReadMe_Resources/5_drone_formation_token_ring.gif)
 
 ## Concept
 
-Every drone is assigned a drone ID before the start of the mission. The ID is an integer number that dictates the drones position in the formatotion. Each drone identifies the number of drones in the formation and using the ID, calculates where it should place itself to form a symmetric formation around a waypoint.
+Every drone is assigned a drone ID before the start of the mission. The ID is an integer number that dictates the drone's position in the formation. Each drone identifies the number of drones in the formation and using the ID, calculates where it should place itself to form a symmetric formation around a waypoint.
 
-Once the position has been calculated, each drone converges to the desired position, and compares every other drone's position with where they should be in the formation. If every drone is found to be close to its desired formation, each drone independently decides that the formation
-is ready, and repeats the process around the next waypoint.
+Once the position has been calculated, each drone converges to the desired position. Starting from the drone with ID equal to `waypoint_num % NUM_AGENTS`, the token ring algorithm is initiated. The selected agent generates a token, and as soon as it takes its place in the formation, it attaches its ID to the token and publishes. Each agent stays in the formation untill it reads a token with ID 1 less than that of itself. This ensures that all agents leading to say, drone ID X, will be in formation.
 
 Presently, every drone has been given the same list of waypoints. In the future I would like to compute the plan onboard and distribute it among the other agents.
 
