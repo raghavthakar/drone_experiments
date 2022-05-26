@@ -14,6 +14,9 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   roscpp
+  tf2
+  tf2_ros
+  nav_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -58,7 +61,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  CentreOfMass.srv
+  # CentreOfMass.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -109,7 +112,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES carriers
- CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp message_runtime
+ CATKIN_DEPENDS geometry_msgs mavros_msgs nav_msgs roscpp tf2 tf2_ros message_runtime
 #  DEPENDS system_lib
 )
 
@@ -138,8 +141,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-add_executable(swarm_member src/swarm_member.cpp)
-
+add_executable(swarm_member src/swarm_member_dev.cpp)
 add_executable(main src/main.cpp)
 
 ## Rename C++ executable without prefix

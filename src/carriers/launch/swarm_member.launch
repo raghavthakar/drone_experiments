@@ -4,4 +4,5 @@
     <group ns="uav$(arg drone_number)">
         <node pkg="carriers" type="swarm_member" name="swarm_member" args="$(arg drone_number)" output="screen"/>
     </group>
+    <!-- <node pkg="carriers" type="swarm_member" name="swarm_member" args="$(arg drone_number)" output="screen"/> -->
 </launch>

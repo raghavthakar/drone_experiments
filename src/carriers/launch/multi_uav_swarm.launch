@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Launches the offb_node in the correct namespace -->
 <launch>
-    <!-- drone_count can be inaccurate, will be automatically set anyway -->
-    <param name="/drone_count" value="0" />
     <!-- Make sure that drone_number starts from 0 and is continuous -->
     <!-- It is used to count the total number of drones in the swarm -->
     <include file="$(find carriers)/launch/swarm_member.launch">
@@ -26,5 +24,5 @@
     </include>
 
     <!-- Main file to control the swarm -->
-    <node pkg="carriers" type="main" name="main" output="screen"/>
+    <!-- <node pkg="carriers" type="main" name="main" output="screen"/> -->
 </launch>
